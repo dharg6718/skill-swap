@@ -259,6 +259,19 @@ CLIENT_URL=http://localhost:5173
 VITE_API_URL=http://localhost:5000/api
 ```
 
+### Vercel Deployment
+
+The frontend and API are deployed together. Leave `VITE_API_URL` unset in Vercel so the client uses the same-origin `/api` path. Add these variables in the Vercel project settings for the Production environment:
+
+```env
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>?retryWrites=true&w=majority
+JWT_SECRET=<long-random-secret>
+JWT_EXPIRES_IN=7d
+CLIENT_URL=https://<your-vercel-domain>
+```
+
+After changing environment variables, redeploy so Vite rebuilds the client and the API function receives the new values.
+
 ---
 
 ## 9. Seed Data & Demo Accounts
