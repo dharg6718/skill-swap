@@ -15,6 +15,11 @@ const EditProfile = () => {
     name: user?.name || '',
     bio: user?.bio || '',
     location: user?.location || '',
+    availability: {
+      days: user?.availability?.days || [],
+      startTime: user?.availability?.startTime || '',
+      endTime: user?.availability?.endTime || ''
+    }
   });
   
   const [allSkills, setAllSkills] = useState([]);
@@ -32,6 +37,11 @@ const EditProfile = () => {
         name: user.name || '',
         bio: user.bio || '',
         location: user.location || '',
+        availability: {
+          days: user.availability?.days || [],
+          startTime: user.availability?.startTime || '',
+          endTime: user.availability?.endTime || ''
+        }
       });
       setSelectedKnown(
         user.skillsKnown?.map(s => String(typeof s === 'object' && s ? s._id : s)) || []
@@ -60,6 +70,22 @@ const EditProfile = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const toggleDay = (day) => {
+    setFormData((prev) => {
+      const days = prev.availability.days.includes(day)
+        ? prev.availability.days.filter((d) => d !== day)
+        : [...prev.availability.days, day];
+
+      return {
+        ...prev,
+        availability: {
+          ...prev.availability,
+          days
+        }
+      };
+    });
+  };
+
   const toggleSkill = (skillId, list, setList) => {
     const targetId = String(skillId);
     const exists = list.some(id => String(id) === targetId);
@@ -83,7 +109,12 @@ const EditProfile = () => {
         bio: formData.bio.trim(),
         location: formData.location.trim(),
         skillsKnown: selectedKnown,
-        skillsWanted: selectedWanted
+        skillsWanted: selectedWanted,
+        availability: {
+          days: formData.availability.days,
+          startTime: formData.availability.startTime,
+          endTime: formData.availability.endTime
+        }
       });
       if (res.success) {
         updateContextUser(res.data);
@@ -160,6 +191,69 @@ const EditProfile = () => {
               className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               placeholder="Describe your background, what you love to build or teach..."
             ></textarea>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-xl space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Availability</h2>
+            <p className="text-xs text-gray-500 mt-1">Optional. Matching quality improves when your schedules overlap.</p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2">Available Days</label>
+            <div className="flex flex-wrap gap-2">
+              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+                const selected = formData.availability.days.includes(day);
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => toggleDay(day)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
+                      selected
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
+                    }`}
+                  >
+                    {day.charAt(0).toUpperCase() + day.slice(1, 3)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Start Time</label>
+              <input
+                type="time"
+                value={formData.availability.startTime}
+                onChange={(e) => setFormData((prev) => ({
+                  ...prev,
+                  availability: {
+                    ...prev.availability,
+                    startTime: e.target.value
+                  }
+                }))}
+                className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">End Time</label>
+              <input
+                type="time"
+                value={formData.availability.endTime}
+                onChange={(e) => setFormData((prev) => ({
+                  ...prev,
+                  availability: {
+                    ...prev.availability,
+                    endTime: e.target.value
+                  }
+                }))}
+                className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
 

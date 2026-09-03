@@ -10,6 +10,9 @@ node_modules/
 dist/
 build/
 
+# Capacitor native project
+client/android/
+
 # IDE
 .vscode/
 .idea/
