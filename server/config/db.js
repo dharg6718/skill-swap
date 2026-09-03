@@ -7,22 +7,37 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config(); // fallback default
 
 let memoryServer = null;
+let connectionPromise = null;
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
   const uri = process.env.MONGODB_URI;
 
   if (uri) {
-    try {
-      console.log('Attempting connection to MongoDB Atlas...');
-      const conn = await mongoose.connect(uri, {
+    connectionPromise = mongoose.connect(uri, {
         serverSelectionTimeoutMS: 5000
+      })
+      .then((conn) => {
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        return conn;
+      })
+      .catch((error) => {
+        connectionPromise = null;
+        throw error;
       });
-      console.log(`MongoDB Atlas Connected: ${conn.connection.host}`);
-      return conn;
-    } catch (error) {
-      console.warn(`\n⚠️ MongoDB Atlas connection warning: ${error.message}`);
-      console.warn('💡 Tip: To connect to MongoDB Atlas directly, whitelist 0.0.0.0/0 (Allow Access from Anywhere) in your Atlas Network Access settings.');
-    }
+
+    return connectionPromise;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('MONGODB_URI is not configured');
   }
 
   // Fallback to Embedded MongoMemoryServer so the app always works 100%
